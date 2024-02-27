@@ -76,7 +76,7 @@ def add_facial_landmarks_to_image(image_path):
             for n in range(0, 68):
                 x = landmarks.part(n).x
                 y = landmarks.part(n).y
-                cv2.circle(color_img, (x, y), 5, color, -1)
+                cv2.circle(color_img, (x, y), 3, color, -1)
 
         # Save the processed image
         processed_image_path = os.path.join(processed_image_directory, os.path.basename(image_path))
