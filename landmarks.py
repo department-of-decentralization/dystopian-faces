@@ -2,6 +2,9 @@ import cv2
 import dlib
 import np
 import logging
+import os
+import urllib.request
+import bz2
 
 # Define groups of landmarks
 LANDMARK_GROUPS = {
@@ -22,9 +25,29 @@ LOGGING_LEVEL = logging.DEBUG
 # Initialize logging
 logging.basicConfig(level=LOGGING_LEVEL, format='%(asctime)s - %(levelname)s - %(message)s')
 
-# Path to the pre-trained model for facial landmarks
 predictor_path = 'shape_predictor_68_face_landmarks.dat'
+compressed_file_path = predictor_path + '.bz2'
+url = 'http://dlib.net/files/shape_predictor_68_face_landmarks.dat.bz2'
 
+# Check if the predictor file already exists
+if not os.path.exists(predictor_path):
+    logging.info(f"{predictor_path} not found. Downloading...")
+
+    # Download the compressed file
+    urllib.request.urlretrieve(url, compressed_file_path)
+    logging.info("Download completed.")
+
+    # Decompress the file
+    with bz2.BZ2File(compressed_file_path, 'rb') as f_in:
+        with open(predictor_path, 'wb') as f_out:
+            f_out.write(f_in.read())
+    logging.info("Decompression completed.")
+
+    # Remove the compressed file after decompression
+    os.remove(compressed_file_path)
+    logging.info(f"Removed compressed file {compressed_file_path}.")
+else:
+    logging.info(f"{predictor_path} already exists.")
 # Initialize dlib's face detector and the facial landmark predictor
 detector = dlib.get_frontal_face_detector()
 predictor = dlib.shape_predictor(predictor_path)
