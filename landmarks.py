@@ -53,7 +53,10 @@ detector = dlib.get_frontal_face_detector()
 predictor = dlib.shape_predictor(predictor_path)
 
 # Function to add facial landmarks to an image
-def add_facial_landmarks_to_image(image_data):
+# Variables: 
+#   line_thickness: Thickness of the lines to be drawn on the face
+#   point_size: Size of the points to be drawn on the face
+def add_facial_landmarks_to_image(image_data, line_thickness=2, point_size=1):
     logging.debug("Processing image.")
     try:
         # Convert the bytes data to a numpy array
@@ -89,7 +92,7 @@ def add_facial_landmarks_to_image(image_data):
                     part_a = landmarks.part(points[i])
                     part_b = landmarks.part(points[i + 1])
 
-                    cv2.line(color_img, (part_a.x, part_a.y), (part_b.x, part_b.y), color, 2)
+                    cv2.line(color_img, (part_a.x, part_a.y), (part_b.x, part_b.y), color, line_thickness)
 
 
 
@@ -97,7 +100,7 @@ def add_facial_landmarks_to_image(image_data):
             for n in range(0, 68):
                 x = landmarks.part(n).x
                 y = landmarks.part(n).y
-                cv2.circle(color_img, (x, y), 5, color, -1)
+                cv2.circle(color_img, (x, y), point_size, color, -1)
 
         # Encode the image to bytes
         _, img_encoded = cv2.imencode('.jpg', color_img)
