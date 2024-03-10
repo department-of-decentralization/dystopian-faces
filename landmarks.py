@@ -111,3 +111,4 @@ def add_facial_landmarks_to_image(image_data, line_thickness=2, point_size=1):
         return img_bytes
     except Exception as e:
         logging.error(f"Error processing: {e}")
+        raise

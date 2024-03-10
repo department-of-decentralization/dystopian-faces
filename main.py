@@ -1,5 +1,5 @@
 import flask
-from flask import jsonify, send_file
+from flask import send_file
 from io import BytesIO
 import functions_framework
 from landmarks import add_facial_landmarks_to_image
@@ -62,9 +62,17 @@ def process_image(request: flask.Request):
         response = send_file(processed_image_stream, mimetype='image/jpeg')
         response.headers.extend(headers)
         return response
-
-
+    except ValueError as ve:
+        # Handle specific exceptions like missing faces or corrupted images
+        logging.error(f"ValueError: {ve}")
+        error_response = flask.jsonify({'error': str(ve)})  # Create the response object
+        error_response.status_code = 400  # Set the status code
+        error_response.headers.extend(headers)  # Extend the headers of the response object
+        return error_response
     except Exception as e:
-        error_response = jsonify({'error': str(e)}), 500
-        error_response.headers.extend(headers)
+        # Handle unexpected or generic exceptions
+        logging.error(f"Unexpected error: {e}")
+        error_response = flask.jsonify({'error': 'An unexpected error occurred'})  # Create the response object
+        error_response.status_code = 500  # Set the status code
+        error_response.headers.extend(headers)  # Extend the headers of the response object
         return error_response
