@@ -5,9 +5,7 @@ import functions_framework
 from landmarks import add_facial_landmarks_to_image
 import logging
 LOGGING_LEVEL = logging.DEBUG
-import os
 
-environment = os.getenv('ENVIRONMENT', 'development')  # Default to 'development' if not set
 
 # Initialize logging
 logging.basicConfig(level=LOGGING_LEVEL, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -18,27 +16,21 @@ def process_image(request: flask.Request):
     # Set CORS headers for the preflight request
     if request.method == 'OPTIONS':
         logging.info("OPTIONS request")
+        # Allows GET requests from origin http://ethberlin.org with
+        # Authorization header
         headers = {
+            'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'POST',
             'Access-Control-Allow-Headers': 'Content-Type, Authorization',
             'Access-Control-Max-Age': '3600'
         }
-        
-        # Differentiate between environments for CORS
-        if environment == 'production':
-            headers['Access-Control-Allow-Origin'] = 'http://ethberlin.org'
-        else:  # Development or other environments
-            headers['Access-Control-Allow-Origin'] = '*'  # or specify 'http://localhost:[port]' if you want to be more restrictive
-        
         return ('', 204, headers)
 
     # Set CORS headers for the main request
-    headers = {}
-    if environment == 'production':
-        headers['Access-Control-Allow-Origin'] = 'http://ethberlin.org'
-    else:
-        headers['Access-Control-Allow-Origin'] = '*'  # or specify 'http://localhost:[port]' if you want to be more restrictive
-        
+    headers = {
+        'Access-Control-Allow-Origin': '*'
+    }
+    
     # Ensure there is a file in the request
     if 'file' not in request.files:
         return flask.jsonify({'error': 'no file'}), 400
