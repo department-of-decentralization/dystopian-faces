@@ -41,15 +41,16 @@ def process_image(request: flask.Request):
         return flask.jsonify({'error': 'no filename'}), 400
 
     # Parse line_thickness and point_size from the request arguments
-    line_thickness = request.args.get('line_thickness', type=int)
-    point_size = request.args.get('point_size', type=int)
+    line_thickness = request.args.get('line_thickness', default=2, type=int)
+    point_size = request.args.get('point_size', default=1, type=int)
+    color = request.args.get('color', default='#FFD200', type=str)
 
     try:
         # Read the image into memory
         image_data = file.read()
 
         # Process the image to add facial landmarks
-        processed_image_data = add_facial_landmarks_to_image(image_data, line_thickness, point_size)
+        processed_image_data = add_facial_landmarks_to_image(image_data, line_thickness, point_size, color)
 
         if processed_image_data is None:
             return flask.jsonify({'error': 'could not process image'}), 500

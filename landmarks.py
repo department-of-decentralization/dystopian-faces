@@ -56,7 +56,7 @@ predictor = dlib.shape_predictor(predictor_path)
 # Variables: 
 #   line_thickness: Thickness of the lines to be drawn on the face
 #   point_size: Size of the points to be drawn on the face
-def add_facial_landmarks_to_image(image_data, line_thickness=2, point_size=1):
+def add_facial_landmarks_to_image(image_data, line_thickness, point_size, color):
     logging.debug("Processing image.")
     try:
         # Convert the bytes data to a numpy array
@@ -64,6 +64,7 @@ def add_facial_landmarks_to_image(image_data, line_thickness=2, point_size=1):
         # Decode image
         img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
+        logging.debug("Arguments: line_thickness={}, point_size={}, color={}".format(line_thickness, point_size, color))
         # Throw an error if img is None (meaning the image could not be decoded)
         if img is None:
             raise ValueError("No image found or image data is corrupted")
@@ -76,8 +77,12 @@ def add_facial_landmarks_to_image(image_data, line_thickness=2, point_size=1):
         if len(faces) == 0:
             raise ValueError("No faces found in the image.")
         
-        # Generate a random color for this image
-        color = (0, 210, 255)  # BGR format for #FFD200
+        logging.debug("Found faces.")
+
+
+        # Convert your hexadecimal color to BGR format
+        color_bgr = hex_to_bgr(color)
+        logging.debug(f"Color in BGR format: {color_bgr}")
 
         # Convert the grayscale image back to BGR to draw colored landmarks
         color_img = cv2.cvtColor(gray, cv2.COLOR_GRAY2BGR)
@@ -92,7 +97,7 @@ def add_facial_landmarks_to_image(image_data, line_thickness=2, point_size=1):
                     part_a = landmarks.part(points[i])
                     part_b = landmarks.part(points[i + 1])
 
-                    cv2.line(color_img, (part_a.x, part_a.y), (part_b.x, part_b.y), color, line_thickness)
+                    cv2.line(color_img, (part_a.x, part_a.y), (part_b.x, part_b.y), color_bgr, line_thickness)
 
 
 
@@ -100,7 +105,7 @@ def add_facial_landmarks_to_image(image_data, line_thickness=2, point_size=1):
             for n in range(0, 68):
                 x = landmarks.part(n).x
                 y = landmarks.part(n).y
-                cv2.circle(color_img, (x, y), point_size, color, -1)
+                cv2.circle(color_img, (x, y), point_size, color_bgr, -1)
 
         # Encode the image to bytes
         _, img_encoded = cv2.imencode('.jpg', color_img)
@@ -112,3 +117,10 @@ def add_facial_landmarks_to_image(image_data, line_thickness=2, point_size=1):
     except Exception as e:
         logging.error(f"Error processing: {e}")
         raise
+
+def hex_to_bgr(color_hex):
+    color_hex = color_hex.lstrip('#')  # Ensure '#' is stripped from the beginning
+    # Convert the hex to RGB first
+    rgb = tuple(int(color_hex[i:i+2], 16) for i in (0, 2, 4))
+    # Convert RGB to BGR
+    return rgb[::-1]  # Return the reverse tuple, which is BGR
